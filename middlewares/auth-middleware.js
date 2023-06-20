@@ -2,10 +2,10 @@ const jwt = require("jsonwebtoken");
 const User = require("../schemas/user.js");
 
 module.exports = async (req, res, next) => {
-  const { authorization } = req.cookies;
+  const { Authorization } = req.cookies;
 
-  // authorization 쿠기가 존재하지 않았을때를 대비
-  const [authType, authToken] = (authorization ?? "").split(" ");
+  // Authorization 쿠기가 존재하지 않았을때를 대비
+  const [authType, authToken] = (Authorization ?? "").split(" ");
 
   // authType === Bearer 값인지 확인
   // authToken 검증

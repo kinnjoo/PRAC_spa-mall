@@ -1,6 +1,19 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../schemas/user.js");
+const authMiddleware = require("../middlewares/auth-middleware.js");
+
+// 내 정보 조회 API
+router.get("/users/me", authMiddleware, async (req, res) => {
+  const { email, nickname } = res.locals.user;
+
+  res.status(200).json({
+    user: {
+      email: email,
+      nickname: nickname
+    }
+  });
+});
 
 router.post("/users", async (req, res) => {
   const { email, nickname, password, confirmPassword } = req.body;
