@@ -1,54 +1,50 @@
 const express = require("express");
 const router = express.Router();
 
-const goods = [
-  {
-    goodsId: 4,
-    name: "상품 4",
-    thumbnailUrl:
-      "https://cdn.pixabay.com/photo/2016/09/07/02/11/frogs-1650657_1280.jpg",
-    category: "drink",
-    price: 0.1,
-  },
-  {
-    goodsId: 3,
-    name: "상품 3",
-    thumbnailUrl:
-      "https://cdn.pixabay.com/photo/2016/09/07/02/12/frogs-1650658_1280.jpg",
-    category: "drink",
-    price: 2.2,
-  },
-  {
-    goodsId: 2,
-    name: "상품 2",
-    thumbnailUrl:
-      "https://cdn.pixabay.com/photo/2014/08/26/19/19/wine-428316_1280.jpg",
-    category: "drink",
-    price: 0.11,
-  },
-  {
-    goodsId: 1,
-    name: "상품 1",
-    thumbnailUrl:
-      "https://cdn.pixabay.com/photo/2016/09/07/19/54/wines-1652455_1280.jpg",
-    category: "drink",
-    price: 6.2,
-  },
-];
-
-//상품 목록 조회 API
-router.get("/goods", (req, res) => {
-  res.json({ goods: goods });
-});
-
-//상품 상세 조회 API
-router.get("/goods/:goodsId", (req, res) => {
-  const { goodsId } = req.params;
-  const [detail] = goods.filter((goods) => goods.goodsId === Number(goodsId));
-  res.json({ detail });
-});
-
+const Goods = require("../schemas/goods.js");
 const Cart = require("../schemas/cart.js");
+
+// 상품 목록 조회 API
+router.get("/goods", async (req, res) => {
+  const { category } = req.query;
+  console.log(category);
+
+  const goods = await Goods.find(category ? { category } : {})
+    .sort("-date")
+    .exec();
+
+  const results = goods.map((item) => {
+    return {
+      goodsId: item.goodsId,
+      name: item.name,
+      price: item.price,
+      thumbnailUrl: item.thumbnailUrl,
+      category: item.category,
+    };
+  });
+
+  res.json({ goods: results });
+});
+
+// 상품 상세 조회 API
+router.get("/goods/:goodsId", async (req, res) => {
+  const { category } = req.query;
+  const { goodsId } = req.params;
+
+  const goods = await Goods.findOne({ goodsId })
+    .sort("-date")
+    .exec();
+
+  const result = {
+    goodsId: goods.goodsId,
+    name: goods.name,
+    price: goods.price,
+    thumbnailUrl: goods.thumbnailUrl,
+    category: goods.category,
+  }
+
+  res.json({ goods: result });
+});
 
 router.post("/goods/:goodsId/cart", async (req, res) => {
   const { goodsId } = req.params;
@@ -92,7 +88,6 @@ router.delete("/goods/:goodsId/cart", async (req, res) => {
   res.json({ result: "success" });
 })
 
-const Goods = require("../schemas/goods.js");
 router.post("/goods", async (req, res) => {
   const { goodsId, name, thumbnailUrl, category, price } = req.body;
 
